@@ -15,6 +15,7 @@ import java.util.Map;
 @SuppressWarnings({"DanglingJavadoc", "WeakerAccess"})
 public class Hash extends Observable<novemberizing.ds.tuple.Triple<Integer,String, String>> implements Runnable {
 
+
     public static novemberizing.rx.Req<String> Set(String category, String parent, String child, String o){
         novemberizing.rx.Req<String> req = novemberizing.rx.Operator.Req(category + ":" + parent, child, o,
                 (key, sub, value, res)->{
