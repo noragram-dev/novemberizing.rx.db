@@ -14,7 +14,14 @@ import java.util.Map;
  */
 @SuppressWarnings({"DanglingJavadoc", "WeakerAccess"})
 public class Hash extends Observable<novemberizing.ds.tuple.Triple<Integer,String, String>> implements Runnable {
-
+    public static novemberizing.rx.Req.Factory<String> Req(String category, String parent, String child, String o){
+        return new novemberizing.rx.Req.Factory<String>(){
+            @Override
+            public novemberizing.rx.Req<String> call() {
+                return novemberizing.rx.db.Hash.Set(category, parent, child, o);
+            }
+        };
+    }
 
     public static novemberizing.rx.Req<String> Set(String category, String parent, String child, String o){
         novemberizing.rx.Req<String> req = novemberizing.rx.Operator.Req(category + ":" + parent, child, o,
