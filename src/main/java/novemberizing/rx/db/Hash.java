@@ -1,4 +1,4 @@
-package redis.rx;
+package novemberizing.rx.db;
 
 import novemberizing.rx.Observable;
 import redis.clients.jedis.Jedis;
