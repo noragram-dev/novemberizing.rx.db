@@ -1,6 +1,7 @@
 package novemberizing.rx.db;
 
 import novemberizing.rx.Observable;
+import novemberizing.util.Log;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
@@ -21,6 +22,17 @@ public class Hash extends Observable<novemberizing.ds.tuple.Triple<Integer,Strin
                 return novemberizing.rx.db.Hash.Set(category, parent, child, o);
             }
         };
+    }
+
+    public static String Get(String category, String parent, String child){
+        Jedis jedis = redis.Pool.Jedis();
+        String ret = null;
+        try {
+            ret = jedis.hget(category + ":" + parent, child);
+        } catch(Exception e){
+            Log.e("redis>", e.getMessage());
+        }
+        return ret;
     }
 
     public static novemberizing.rx.Req<String> Set(String category, String parent, String child, String o){
