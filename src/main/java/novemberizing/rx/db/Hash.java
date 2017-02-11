@@ -3,6 +3,7 @@ package novemberizing.rx.db;
 import com.google.gson.Gson;
 import novemberizing.rx.Observable;
 
+import novemberizing.util.Log;
 import redis.clients.jedis.Jedis;
 
 
@@ -17,8 +18,9 @@ public class Hash extends Observable<novemberizing.ds.tuple.Triple<Integer,Strin
     public static <T> novemberizing.rx.Req<T> Set(String category, String key, T o, Gson gson){
         novemberizing.rx.Req<T> req = novemberizing.rx.Operator.Req(category, key, o,
                 (__category, __key, value, res)->{
-                    Jedis jedis = redis.Pool.Jedis();
+                    Jedis jedis;
                     try {
+                        jedis = redis.Pool.Jedis();
                         jedis.hset(__category, __key, gson.toJson(value));
                     } catch(Exception e){
                         res.error(e);
@@ -33,8 +35,9 @@ public class Hash extends Observable<novemberizing.ds.tuple.Triple<Integer,Strin
     public static novemberizing.rx.Req<Object> Del(String category, String key){
         novemberizing.rx.Req<Object> req = novemberizing.rx.Operator.Req(category, key,
                 (__category, __key, res)->{
-                    Jedis jedis = redis.Pool.Jedis();
+                    Jedis jedis;
                     try {
+                        jedis = redis.Pool.Jedis();
                         jedis.hdel(__category, __key);
                         res.complete();
                     } catch(Exception e){
@@ -45,6 +48,19 @@ public class Hash extends Observable<novemberizing.ds.tuple.Triple<Integer,Strin
         return req;
     }
 
+    public static <T> T Get(String category, String key, Class<T> c, Gson gson){
+        T ret = null;
+        try {
+            Jedis jedis = redis.Pool.Jedis();
+            String v = jedis.hget(category, key);
+            if(v!=null){
+                ret = gson.fromJson(v, c);
+            }
+        } catch(Exception e){
+            Log.d("novemberizing.rx.data>", e.getMessage());
+        }
+        return ret;
+    }
 
     public static class Req {
         public static <T> novemberizing.rx.Req.Factory<T> Set(String category, String key, T o, Gson gson){
@@ -60,6 +76,8 @@ public class Hash extends Observable<novemberizing.ds.tuple.Triple<Integer,Strin
     }
 
     @Override public void run() {}
+
+
 
 //    public static novemberizing.rx.Req.Factory<String> Req(String category, String parent, String child, String o){
 //        return new novemberizing.rx.Req.Factory<String>(){
