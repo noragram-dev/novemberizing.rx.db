@@ -6,6 +6,9 @@ import novemberizing.rx.Observable;
 import novemberizing.util.Log;
 import redis.clients.jedis.Jedis;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  *
@@ -15,6 +18,34 @@ import redis.clients.jedis.Jedis;
 @SuppressWarnings({"DanglingJavadoc", "WeakerAccess", "unused", "Convert2Lambda"})
 public class Hash extends Observable<novemberizing.ds.tuple.Triple<Integer,String, String>> implements Runnable {
 
+    public static <T> novemberizing.rx.Req<T> Bulk(String category, String key, Map<String, T> map, Gson gson){
+        novemberizing.rx.Req<T> req = novemberizing.rx.Operator.Req(category, map,
+                (__category, __map, res)->{
+                    Jedis jedis;
+                    try {
+                        HashMap<String, String > real = new HashMap<>();
+                        try {
+                            for(Map.Entry<String, T> entry : __map.entrySet()){
+                                real.put(key + ":" + entry.getKey(),gson.toJson(entry.getValue()));
+                            }
+                        } catch(Exception e){
+                            Log.e("bulk:error>", e.getMessage());
+                        }
+                        if(real.size()>0){
+                            jedis = redis.Pool.Jedis();
+                            jedis.hmset(category, real);
+                        } else {
+                            res.error(new Throwable("no data"));
+                        }
+                    } catch(Exception e){
+                        res.error(e);
+                    } finally {
+                        res.complete();
+                    }
+                });
+        req.execute(null);
+        return req;
+    }
     public static <T> novemberizing.rx.Req<T> Set(String category, String key, T o, Gson gson){
         novemberizing.rx.Req<T> req = novemberizing.rx.Operator.Req(category, key, o,
                 (__category, __key, value, res)->{
